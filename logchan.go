@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"time"
+	"io"
 )
 
 const (
@@ -40,10 +41,11 @@ func StartLog(path, prefix string, buflen int, done chan struct{}) {
 }
 
 func Log(lv int, format string, a ...interface{}) {
-	logChannel <- LogType{level: lv, log: fmt.Sprintf(format, a...) }
+	logChannel <- LogType{level: lv, log: fmt.Sprintf(format, a...)}
 }
 
-func Close(){
+func Close() {
+	time.Sleep(time.Millisecond * 100)
 	close(logChannel)
 }
 
@@ -57,12 +59,14 @@ func rotateLogFile(t time.Time, f *os.File) *os.File {
 	if err != nil {
 		panic(err)
 	}
-	log.SetOutput(fpLog)
+
+	multiWriter := io.MultiWriter(fpLog, os.Stdout)
+	log.SetOutput(multiWriter)
+	//log.SetOutput(fpLog)
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds)
 
 	return fpLog
 }
-
 
 func logging(path, prefix string, done chan struct{}) {
 
@@ -87,4 +91,6 @@ func logging(path, prefix string, done chan struct{}) {
 
 		log.Printf("[%s] %s\n", lineHead[log2Write.level], log2Write.log)
 	}
+
+	log.Printf("[%s] %s\n", lineHead[NOTICE], "log channel closed.")
 }

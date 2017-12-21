@@ -5,6 +5,7 @@ func doSomething(){
 }
 
 // it just a sample code.
+// add package name "logger." on your code
 func main() {
 	// log file will be created at "./log/test_yyyymmdd.log"
 	logPath := "./log"
